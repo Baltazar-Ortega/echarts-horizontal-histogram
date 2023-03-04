@@ -92,14 +92,7 @@ option = {
       axisLine: { show: false },
     },
     {
-      scale: true,
-      splitLine: {
-        show: false
-      },
-      axisTick: { show: false },
-      axisLabel: { show: false },
-      axisLine: { show: false },
-      inverse: true
+      type: "value"
     },
   ],
   yAxis: [
@@ -192,12 +185,13 @@ option = {
         color: "blue"
       },
       xAxisIndex: 2,
-      yAxisIndex: 2,
+      yAxisIndex: 0,
       smooth: true,
       label: {
         show: true,
         position: "top"
       },
+      // data: [0, 50, 100, 150, 200, 250]
       datasetIndex: 1
     },
   ]
