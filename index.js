@@ -87,9 +87,23 @@ option = {
       splitLine: {
         show: false
       },
-    }
+      axisTick: { show: false },
+      axisLabel: { show: false },
+      axisLine: { show: false },
+    },
+    {
+      scale: true,
+      splitLine: {
+        show: false
+      },
+      axisTick: { show: false },
+      axisLabel: { show: false },
+      axisLine: { show: false },
+      inverse: true
+    },
   ],
   yAxis: [
+    // This makes the histogram horizontal
     {
       type: "category",
       axisTick: { show: true },
@@ -98,6 +112,9 @@ option = {
       splitLine: {
         show: false
       },
+    },
+    {
+      type: "value",
     },
     {
       type: "value",
@@ -163,7 +180,26 @@ option = {
           ]
         ]
       },
-    }
+    },
+    {
+      name: "curve",
+      type: "line",
+      areaStyle: {
+        color: "blue"
+      },
+      lineStyle: {
+        width: 3,
+        color: "blue"
+      },
+      xAxisIndex: 2,
+      yAxisIndex: 2,
+      smooth: true,
+      label: {
+        show: true,
+        position: "top"
+      },
+      datasetIndex: 1
+    },
   ]
 };
 
