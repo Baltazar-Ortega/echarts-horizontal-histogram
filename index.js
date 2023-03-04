@@ -13,8 +13,15 @@ function xAxisFormatter(value, length) {
   return percent + "%";
 }
 
+const normalDistribution = (mean, std) => (x) => {
+  return (
+    (1 / (std * Math.sqrt(2 * Math.PI))) *
+    Math.exp(-Math.pow(x - mean, 2) / (2 * Math.pow(std, 2)))
+  );
+}
+
 // length=32
-let sourceData = [
+let barsData = [
   [143],
   [214],
   [251],
@@ -48,17 +55,25 @@ let sourceData = [
   [155],
   [125]
 ];
+const timeSeriesData = [
+  0.17, 0.96, 1.96, 3, 1.35, 1.24, 1.34, 1.94, 1.94, 1.56,
+  1.66, 1.94, 1.75, 1.25, 1.48, 1.28, 2, 2.7, 0.96, 0.52
+]
+
+const mean = math.mean(timeSeriesData);
+const std = math.std(timeSeriesData);
+const normalDistributionData = timeSeriesData.map(normalDistribution(mean, std));
 
 echarts.registerTransform(ecStat.transform.histogram);
 
 // Create bins
-const bins = ecStat.histogram(sourceData, "sturges");
+const bins = ecStat.histogram(barsData, "sturges");
 console.log("bins: ", bins);
 
 option = {
   dataset: [
     {
-      source: sourceData
+      source: barsData
     },
     {
       transform: {
@@ -77,7 +92,7 @@ option = {
         show: false
       },
       axisLabel: {
-        formatter: (value) => xAxisFormatter(value, sourceData.length),
+        formatter: (value) => xAxisFormatter(value, barsData.length),
         interval: 0,
         show: true
       }
@@ -92,7 +107,10 @@ option = {
       axisLine: { show: false },
     },
     {
-      type: "value"
+      name: 'Flow(m³/s)',
+      type: 'value',
+      min: 0,
+      max: 5
     },
   ],
   yAxis: [
@@ -109,9 +127,15 @@ option = {
     {
       type: "value",
     },
-    {
-      type: "value",
-    }
+    
+      {
+        type: 'category',
+        boundaryGap: false,
+        axisLine: { onZero: false },
+        axisLabel: { show: false },
+        data: Array.from({ length: 20 }, () => '2009/6/12 11:00')
+      }
+    
   ],
   series: [
     {
@@ -125,6 +149,24 @@ option = {
         position: "right"
       },
       datasetIndex: 1
+    },
+    {
+      name: 'Flow',
+      type: 'line',
+      xAxisIndex: 2,
+      yAxisIndex: 2,
+      smooth: true,
+      label: {
+        show: true,
+        position: "top"
+      },
+      areaStyle: {},
+      lineStyle: {
+        width: 3,
+        color: "blue"
+
+      },
+      data: timeSeriesData
     },
     {
       name: "",
@@ -174,26 +216,7 @@ option = {
         ]
       },
     },
-    {
-      name: "curve",
-      type: "line",
-      areaStyle: {
-        color: "blue"
-      },
-      lineStyle: {
-        width: 3,
-        color: "blue"
-      },
-      xAxisIndex: 2,
-      yAxisIndex: 0,
-      smooth: true,
-      label: {
-        show: true,
-        position: "top"
-      },
-      // data: [0, 50, 100, 150, 200, 250]
-      datasetIndex: 1
-    },
+    
   ]
 };
 
