@@ -1,11 +1,13 @@
 var dom = document.getElementById("chart-container");
 var myChart = echarts.init(dom, null, {
   renderer: "canvas",
-  useDirtyRect: false
+  useDirtyRect: false,
 });
 var app = {};
 
 var option;
+
+echarts.registerTransform(ecStat.transform.histogram);
 
 function xAxisFormatter(value, length) {
   if (length === 0) return "";
@@ -18,7 +20,7 @@ const normalDistribution = (mean, std) => (x) => {
     (1 / (std * Math.sqrt(2 * Math.PI))) *
     Math.exp(-Math.pow(x - mean, 2) / (2 * Math.pow(std, 2)))
   );
-}
+};
 
 // length=32
 let barsData = [
@@ -26,16 +28,16 @@ let barsData = [
   [214],
   [251],
   [26],
-  [86],
+  [106],
   [93],
   [176],
   [39],
   [221],
   [188],
-  [57],
+  [127],
   [91],
   [191],
-  [8],
+  [58],
   [196],
   [177],
   [177],
@@ -43,28 +45,35 @@ let barsData = [
   [201],
   [199],
   [47],
-  [81],
+  [141],
   [98],
   [121],
   [37],
-  [12],
+  [72],
   [105],
   [168],
-  [84],
+  [114],
   [197],
   [155],
-  [125]
+  [125],
 ];
 const timeSeriesData = [
-  0.17, 0.96, 1.96, 3, 1.35, 1.24, 1.34, 1.94, 1.94, 1.56,
-  1.66, 1.94, 1.75, 1.25, 1.48, 1.28, 2, 2.7, 0.96, 0.52
-]
+  0.17, 0.96, 1.96, 3, 1.35, 1.24, 1.34, 1.94, 1.94, 1.56, 1.66, 1.94, 1.75,
+  1.25, 1.48, 1.28, 2, 2.7, 0.96, 0.52,
+];
+// Apply squeeze and Ascending order
+const formattedBarsData = math.squeeze(barsData).sort((a, b) => a - b);
 
-const mean = math.mean(timeSeriesData);
-const std = math.std(timeSeriesData);
-const normalDistributionData = timeSeriesData.map(normalDistribution(mean, std));
+const mean = math.mean(formattedBarsData);
+const std = math.std(formattedBarsData);
+const normalDistributionData = formattedBarsData.map(
+  normalDistribution(mean, std)
+);
 
-echarts.registerTransform(ecStat.transform.histogram);
+const maxNormalDistribution = math.max(normalDistributionData);
+const minNormalDistribution = math.min(normalDistributionData);
+const difference = maxNormalDistribution - minNormalDistribution;
+const maxToShow = maxNormalDistribution + difference;
 
 // Create bins
 const bins = ecStat.histogram(barsData, "sturges");
@@ -73,71 +82,76 @@ console.log("bins: ", bins);
 option = {
   dataset: [
     {
-      source: barsData
+      source: barsData,
     },
     {
       transform: {
         type: "ecStat:histogram",
-        config: {}
-      }
-    }
+        config: {},
+      },
+    },
   ],
   tooltip: {},
   xAxis: [
+    // Bars
     {
       min: 0,
       max: 31,
       scale: true,
       splitLine: {
-        show: false
+        show: false,
       },
       axisLabel: {
         formatter: (value) => xAxisFormatter(value, barsData.length),
         interval: 0,
-        show: true
-      }
+        show: true,
+      },
     },
+    // Ghost line for markLines and markAreas
     {
       scale: true,
       splitLine: {
-        show: false
+        show: false,
       },
       axisTick: { show: false },
       axisLabel: { show: false },
       axisLine: { show: false },
     },
+    // Normal Distribution
     {
-      name: 'Flow(m³/s)',
-      type: 'value',
-      min: 0,
-      max: 5
+      type: "value",
+      min: minNormalDistribution,
+      max: maxToShow,
+      axisLabel: { show: false },
     },
   ],
   yAxis: [
     // This makes the histogram horizontal
+    // Bars
     {
       type: "category",
       axisTick: { show: true },
       axisLabel: { show: true },
       axisLine: { show: false },
       splitLine: {
-        show: false
+        show: false,
       },
     },
+    // Ghost line for markLines and markAreas
     {
       type: "value",
     },
-    
-      {
-        type: 'category',
-        boundaryGap: false,
-        axisLine: { onZero: false },
-        axisLabel: { show: false },
-        data: Array.from({ length: 20 }, () => '2009/6/12 11:00')
-      }
-    
+    // Normal Distribution
+    {
+      type: "category",
+      boundaryGap: false,
+      axisLine: { onZero: false },
+      axisLabel: { show: false },
+      data: Array.from({ length: formattedBarsData.length }, () => "dummy"),
+    },
   ],
   series: [
+    // Bars
     {
       name: "histogram",
       type: "bar",
@@ -146,58 +160,42 @@ option = {
       yAxisIndex: 0,
       label: {
         show: true,
-        position: "right"
+        position: "right",
       },
-      datasetIndex: 1
+      datasetIndex: 1,
     },
-    {
-      name: 'Flow',
-      type: 'line',
-      xAxisIndex: 2,
-      yAxisIndex: 2,
-      smooth: true,
-      label: {
-        show: true,
-        position: "top"
-      },
-      areaStyle: {},
-      lineStyle: {
-        width: 3,
-        color: "blue"
-
-      },
-      data: timeSeriesData
-    },
+    // Ghost line for markLines and markAreas
     {
       name: "",
       type: "line",
       xAxisIndex: 1,
       yAxisIndex: 1,
+      // Maximum value of the barsData
       data: [300],
-      symbol: '',
+      symbol: "",
       symbolSize: 0,
       markLine: {
-        symbol: '',
+        symbol: "",
         label: {
-          show: true
+          show: true,
         },
         lineStyle: {
           color: "black",
-          type: "dashed"
+          type: "dashed",
         },
         data: [
           {
             yAxis: 225,
             name: "Upper Limit",
             lineStyle: {
-              color: 'gray',
+              color: "gray",
             },
           },
           {
             name: "Lower Limit",
-            yAxis: 70
-          }
-        ]
+            yAxis: 70,
+          },
+        ],
       },
       markArea: {
         data: [
@@ -206,18 +204,34 @@ option = {
               yAxis: 100,
               xAxis: 0,
               itemStyle: {
-                color: "rgb(242, 182, 182)"
-              }
+                color: "rgb(242, 182, 186)",
+              },
             },
             {
               yAxis: 170,
-            }
-          ]
-        ]
+            },
+          ],
+        ],
       },
     },
-    
-  ]
+    // Normal Distribution
+    {
+      type: "line",
+      xAxisIndex: 2,
+      yAxisIndex: 2,
+      smooth: true,
+      symbolSize: 0,
+      label: {
+        show: false,
+      },
+      lineStyle: {
+        width: 2,
+        type: "dashed",
+        color: "blue",
+      },
+      data: normalDistributionData,
+    },
+  ],
 };
 
 if (option && typeof option === "object") {
