@@ -57,10 +57,6 @@ let barsData = [
   [155],
   [125],
 ];
-const timeSeriesData = [
-  0.17, 0.96, 1.96, 3, 1.35, 1.24, 1.34, 1.94, 1.94, 1.56, 1.66, 1.94, 1.75,
-  1.25, 1.48, 1.28, 2, 2.7, 0.96, 0.52,
-];
 // Apply squeeze and Ascending order
 const formattedBarsData = math.squeeze(barsData).sort((a, b) => a - b);
 
@@ -96,7 +92,8 @@ option = {
     // Bars
     {
       min: 0,
-      max: 31,
+      // Amount of data that is used to create the histogram
+      max: 32,
       scale: true,
       splitLine: {
         show: false,
