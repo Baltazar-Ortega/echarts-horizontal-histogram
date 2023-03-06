@@ -30,7 +30,7 @@ function getMinMaxToShow(normalDistributionData) {
   return {
     minToShow: minNormalDistribution,
     maxToShow: maxToShow,
-  }
+  };
 }
 
 function getNormalDistributionData(barsData) {
@@ -44,9 +44,10 @@ function getNormalDistributionData(barsData) {
   const randomNumbers = Array.from({ length: amountRandomNumbers }, () =>
     math.random(minValue, maxValue)
   );
-  const extendedRandomNumbers = randomNumbers.sort((a, b) => a - b)
-  
-  const normalDistributionData = extendedRandomNumbers.map(
+  console.log("randomNumbers: ", randomNumbers);
+  const sortedRandomNumbers = randomNumbers.sort((a, b) => a - b);
+
+  const normalDistributionData = sortedRandomNumbers.map(
     normalDistribution(mean, std)
   );
   return normalDistributionData;
@@ -155,7 +156,7 @@ option = {
     },
     // Ghost line for markLines and markAreas
     {
-      type: "value",
+      type: "value",    
     },
     // Normal Distribution
     {
@@ -163,7 +164,10 @@ option = {
       boundaryGap: false,
       axisLine: { onZero: false },
       axisLabel: { show: false },
-      data: Array.from({ length: normalDistributionData.length }, () => "dummy"),
+      data: Array.from(
+        { length: normalDistributionData.length },
+        () => "dummy"
+      ),
     },
   ],
   series: [
@@ -186,7 +190,7 @@ option = {
       type: "line",
       xAxisIndex: 1,
       yAxisIndex: 1,
-      // Maximum value of the barsData
+      // Maximum limit of the bins 
       data: [300],
       symbol: "",
       symbolSize: 0,
