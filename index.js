@@ -1,11 +1,10 @@
-var dom = document.getElementById("chart-container");
-var myChart = echarts.init(dom, null, {
+let dom = document.getElementById("chart-container");
+let myChart = echarts.init(dom, null, {
   renderer: "canvas",
   useDirtyRect: false,
 });
-var app = {};
-
-var option;
+let app = {};
+let option;
 
 echarts.registerTransform(ecStat.transform.histogram);
 
@@ -21,6 +20,37 @@ const normalDistribution = (mean, std) => (x) => {
     Math.exp(-Math.pow(x - mean, 2) / (2 * Math.pow(std, 2)))
   );
 };
+
+function getMinMaxToShow(normalDistributionData) {
+  const maxNormalDistribution = math.max(normalDistributionData);
+  const minNormalDistribution = math.min(normalDistributionData);
+  const difference = maxNormalDistribution - minNormalDistribution;
+  const maxToShow = maxNormalDistribution + difference;
+
+  return {
+    minToShow: minNormalDistribution,
+    maxToShow: maxToShow,
+  }
+}
+
+function getNormalDistributionData(barsData) {
+  const sortedBarsData = math.squeeze(barsData).sort((a, b) => a - b);
+  const mean = math.mean(sortedBarsData);
+  const std = math.std(sortedBarsData);
+  const minValue = math.min(sortedBarsData);
+  const maxValue = math.max(sortedBarsData);
+
+  let amountRandomNumbers = 1000;
+  const randomNumbers = Array.from({ length: amountRandomNumbers }, () =>
+    math.random(minValue, maxValue)
+  );
+  const extendedRandomNumbers = randomNumbers.sort((a, b) => a - b)
+  
+  const normalDistributionData = extendedRandomNumbers.map(
+    normalDistribution(mean, std)
+  );
+  return normalDistributionData;
+}
 
 // length=32
 let barsData = [
@@ -57,21 +87,10 @@ let barsData = [
   [155],
   [125],
 ];
-// Apply squeeze and Ascending order
-const formattedBarsData = math.squeeze(barsData).sort((a, b) => a - b);
 
-const mean = math.mean(formattedBarsData);
-const std = math.std(formattedBarsData);
-const normalDistributionData = formattedBarsData.map(
-  normalDistribution(mean, std)
-);
+const normalDistributionData = getNormalDistributionData(barsData);
+const { minToShow, maxToShow } = getMinMaxToShow(normalDistributionData);
 
-const maxNormalDistribution = math.max(normalDistributionData);
-const minNormalDistribution = math.min(normalDistributionData);
-const difference = maxNormalDistribution - minNormalDistribution;
-const maxToShow = maxNormalDistribution + difference;
-
-// Create bins
 const bins = ecStat.histogram(barsData, "sturges");
 console.log("bins: ", bins);
 
@@ -117,7 +136,7 @@ option = {
     // Normal Distribution
     {
       type: "value",
-      min: minNormalDistribution,
+      min: minToShow,
       max: maxToShow,
       axisLabel: { show: false },
     },
@@ -144,7 +163,7 @@ option = {
       boundaryGap: false,
       axisLine: { onZero: false },
       axisLabel: { show: false },
-      data: Array.from({ length: formattedBarsData.length }, () => "dummy"),
+      data: Array.from({ length: normalDistributionData.length }, () => "dummy"),
     },
   ],
   series: [
